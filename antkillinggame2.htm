@@ -1,0 +1,222 @@
+<html> 
+    <head> 
+        <script>
+	    var gameover = 0;
+	    var numAnts = 0;
+	    var score = 0;
+            function wiggleAnt(whichant)
+            {
+                var whichimage=whichant; 
+                var id=setInterval(antframe,70); 
+                var whichframe=0; 
+                var goingup=true; 
+                function antframe() 
+                { 
+		    if(gameover==1){
+		    	clearInterval(id);
+		    }
+                    else if(whichant.getAttribute("alive")==0)
+                    {
+                        whichant.setAttribute("src",'deadant.png');
+                        createsquish();
+			clearInterval(id);
+                    }
+                    else 
+                    {
+                        if (goingup) 
+                        { 
+                        whichframe++; 
+                        if (whichframe==3) 
+                            goingup=false; 
+                        } 
+                        else 
+                        { 
+                            whichframe--; 
+                            if (whichframe==0) 
+                                goingup=true; 
+                        } 
+                        whichant.setAttribute("src","ant"+whichframe+".png"); 
+                    }
+                }
+            }
+            function moveAnt(whichant)
+            {
+                var myx=0;
+                var myy=0;
+                var id=setInterval(antmoveframe,70)
+                function antmoveframe()
+                {
+		    var top = parseInt(whichant.style.top.replace("px",""));
+		    if(gameover==1){
+		     	clearInterval(id);
+		    }
+			
+
+                    else if(whichant.getAttribute("alive")==0)
+                    {
+                        clearInterval(id);
+                    }
+		    else if(top >= 500){
+		     	gameOver();
+		    }
+                    else
+                    {
+                        
+                        top+=5;
+                        whichant.style.top=top+"px";
+                        
+                    }
+                }
+            }
+            function squishant(whichant)
+            {
+                document.getElementById("antalive"+whichant).value=0;
+            }
+            function createsquish()
+            {
+                var myaudio=document.createElement("audio"); 
+                var mysource=document.createElement("source"); 
+                mysource.src="squish.mp3"; 
+                myaudio.appendChild(mysource); 
+                myaudio.play();
+                
+            }
+	    function createmunch()
+            {
+                var myaudio=document.createElement("audio"); 
+                var mysource=document.createElement("source"); 
+                mysource.src="eating.mp3"; 
+                myaudio.appendChild(mysource); 
+                myaudio.play();
+                
+            }
+            function userclick(myevent)
+            {
+                var mousex=myevent.clientX;
+                var mousey=myevent.clientY;
+                var ants=document.getElementById("ants").children;
+		var x=0;
+                    for (x=0; x<ants.length; x++) 
+                    {
+			var left=parseInt(ants[x].style.left.replace("px",""));
+			var top=parseInt(ants[x].style.top.replace("px",""));
+                        if ((myevent.clientX>left)
+                            && (myevent.clientX<left+40)
+                            && (myevent.clientY>top)
+                            && (myevent.clientY<top+40)
+			    && ants[x].getAttribute("alive")==1
+                            )
+                        {
+                                ants[x].setAttribute("alive",0);
+				score++;
+				document.getElementById("score").innerText=score;
+                        }
+                    }
+            }
+            function gameOver()
+            {
+		gameover=1;
+		createmunch();
+		var sign=document.getElementById("gameover");
+		sign.style.display="block";
+		var id=setInterval(function(){
+		    var size = Number(sign.style.fontSize.replace("px",""));
+		    console.log(size);
+		    if(size==44){
+		       clearInterval(id);
+		    }
+		    else{
+		       size++;
+		       sign.style.fontSize=size+"px";
+		   }
+		},20);
+            }
+            function gamesetup()
+            {
+		var counter = 0;
+		var difficulty = 0;
+		var id= setInterval(function(){
+		     counter++;
+		     if(counter==1000){
+			difficulty++;
+			counter=0;
+		     }
+		     if(counter%parseInt(1000/difficulty)==0){
+			spawnAnt();
+		     }
+	    	},1);
+            }
+	    function spawnAnt(){
+		if(gameover!=1){
+		     var ant=document.createElement("img");
+		     ant.setAttribute("src","ant0.png");
+		     ant.setAttribute("width","30px");
+		     ant.style.position="absolute";
+		     ant.style.top="0px";
+		     ant.style.left=Math.floor(Math.random()*400)+"px";
+    		     ant.setAttribute("alive",1);
+		     document.getElementById("ants").appendChild(ant);
+		     wiggleAnt(ant);
+		     moveAnt(ant);
+		}
+	   }
+        </script>
+        <title>Ant Buster</title>
+	<style>
+		 #messages{
+		     position:absolute;
+		     left:400px;
+		     top:0;
+		}
+		#gameover{
+		     display:none;
+		     color:red;
+		     position:absolute;
+		     left:100px;
+		     top:200px;
+		     z-index:1000;
+		     font-size:14px;
+		     font-weight:bold;
+		}
+	</style>
+    </head> 
+    <body onload="gamesetup();"
+          onmousedown="userclick(event);"
+    > 
+        <form name="antsmashergame">
+	    <p id="messages"> Ants Killed: <span id="score"></span>
+            </p> 
+	    <p id="gameover"> Game Over</p>	
+            <div id="MyCanvas" style="width: 400px; height: 500px; position: relative;"> 
+                
+               <div id="ants"> 
+                    <input type="hidden" name="antdir0" id="antdir0" value="0" />
+                    <input type="hidden" name="antdir1" id="antdir1" value="1" /> 
+                    <input type="hidden" name="antxpos0" id="antxpos0" value="475" /> 
+                    <input type="hidden" name="antxpos1" id="antxpos1" value="300" /> 
+                    <input type="hidden" name="antypos0" id="antypos0" value="100" />
+                    <input type="hidden" name="antypos1" id="antypos1" value="225" />
+                    <input type="hidden" name="antalive0" id ="antalive0" value="0" /> 
+                    <input type="hidden" name="antalive1" id ="antalive1" value="1" />
+                    <input type="hidden" name="noofants" id="noofants" value="2" />
+                </div>
+		
+                <div id="picnictables">
+                    <img id="picnic0" 
+                         src="picnictable.png" 
+                         style="width: 150px; 
+                                position: absolute; 
+                                top: 535px; 
+                                left: 0px;"/> 
+                    <img id="picnic1" 
+                         src="picnictable.png" 
+                         style="width: 150px; 
+                                position: absolute; 
+                                top: 535px; 
+                                left: 350px;"/> 
+
+                </div> 	
+            </div> 
+        </form> 
+    </body> 
+</html> 
